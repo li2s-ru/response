@@ -8,12 +8,11 @@ class Response
     public $jsonDecode = false;
     public $jsonAsArray = true;
 
+    public $encoded = false;
+    public $charset = null;
+
     private $site = "https://li2s.ru/api/";
     private $data;
-
-    public function __construct()
-    {
-    }
 
     public function execute()
     {
@@ -26,6 +25,10 @@ class Response
             curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($this->data));
             $response = curl_exec($curl);
             curl_close($curl);
+
+            if ($this->encoded && !empty($this->charset)) {
+                $response = $this->formatResponse($response, $this->charset);
+            }
 
             if ($this->jsonDecode) {
                 return json_decode($response, $this->jsonAsArray);
@@ -45,7 +48,7 @@ class Response
         }
     }
 
-    public function formatResponse($text, $inCharset = "UTF-8", $outCharset = "CP1251")
+    public function formatResponse($text, $outCharset = "CP1251", $inCharset = "UTF-8")
     {
         return iconv($inCharset, $outCharset, $text);
     }
